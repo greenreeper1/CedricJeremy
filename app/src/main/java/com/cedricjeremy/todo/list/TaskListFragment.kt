@@ -32,6 +32,7 @@ class TaskListFragment : Fragment() {
     }
 
     private lateinit var binding : FragmentTaskListBinding
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,

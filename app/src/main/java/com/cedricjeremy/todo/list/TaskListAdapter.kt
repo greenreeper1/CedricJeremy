@@ -9,6 +9,8 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.cedricjeremy.todo.R
+import com.cedricjeremy.todo.databinding.FragmentTaskListBinding
+import com.cedricjeremy.todo.databinding.ItemTaskBinding
 
 object MyItemsDiffCallback : DiffUtil.ItemCallback<Task>() {
     override fun areItemsTheSame(oldItem: Task, newItem: Task) : Boolean {
@@ -32,7 +34,6 @@ class TaskListAdapter : ListAdapter<Task, TaskListAdapter.TaskViewHolder>(MyItem
             // on affichera les données ici
             textViewTitle.text = task.title
             textViewDesc.text = task.description
-
             deleteButton.setOnClickListener {
                 onClickDelete(task) // Appelle la lambda pour gérer la suppression
             }
@@ -42,8 +43,8 @@ class TaskListAdapter : ListAdapter<Task, TaskListAdapter.TaskViewHolder>(MyItem
     var onClickDelete: (Task) -> Unit = {}
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
-        val itemView = LayoutInflater.from(parent.context).inflate(R.layout.item_task, parent, false)
-        val taskViewHolder = TaskViewHolder(itemView)
+        binding = ItemTaskBinding.inflate(LayoutInflater.from(parent.context))
+        val taskViewHolder = TaskViewHolder(binding)
         return taskViewHolder
     }
 
