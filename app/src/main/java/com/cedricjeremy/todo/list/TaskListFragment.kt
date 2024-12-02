@@ -29,6 +29,9 @@ class TaskListFragment : Fragment() {
     // Déclaration du launcher
     val createTask = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         // dans cette callback on récupèrera la task et on l'ajoutera à la liste
+        val newTask = Task(id = UUID.randomUUID().toString(), title = "Task ${taskList.size + 1}")
+        taskList = taskList + newTask
+        refreshAdapter()
     }
 
     private lateinit var binding : FragmentTaskListBinding
@@ -53,9 +56,7 @@ class TaskListFragment : Fragment() {
         {
             val intent = Intent(requireContext(), DetailActivity::class.java)
             startActivity(intent)
-            val newTask = Task(id = UUID.randomUUID().toString(), title = "Task ${taskList.size + 1}")
-            taskList = taskList + newTask
-            refreshAdapter()
+            createTask.launch(intent)
         }
 
         adapter.onClickDelete = { task ->
