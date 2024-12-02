@@ -26,13 +26,20 @@ class TaskListAdapter : ListAdapter<Task, TaskListAdapter.TaskViewHolder>(MyItem
     inner class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var textViewTitle = itemView.findViewById<TextView>(R.id.task_title)
         var textViewDesc = itemView.findViewById<TextView>(R.id.task_description)
+        private val deleteButton = itemView.findViewById<View>(R.id.deleteButton)
+        
         fun bind(task: Task) {
             // on affichera les données ici
             textViewTitle.text = task.title
             textViewDesc.text = task.description
-        }
 
+            deleteButton.setOnClickListener {
+                onClickDelete(task) // Appelle la lambda pour gérer la suppression
+            }
+        }
     }
+
+    var onClickDelete: (Task) -> Unit = {}
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
         val itemView = LayoutInflater.from(parent.context).inflate(R.layout.item_task, parent, false)
