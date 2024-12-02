@@ -1,16 +1,20 @@
 package com.cedricjeremy.todo.list
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import androidx.recyclerview.widget.RecyclerView
 import com.cedricjeremy.todo.R
 import com.cedricjeremy.todo.databinding.FragmentTaskListBinding
+import com.cedricjeremy.todo.detail.DetailActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import java.util.UUID
 
@@ -21,6 +25,12 @@ class TaskListFragment : Fragment() {
     Task(id = "id_3", title = "Task 3")
     )
     private val adapter = TaskListAdapter()
+
+    // Déclaration du launcher
+    val createTask = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        // dans cette callback on récupèrera la task et on l'ajoutera à la liste
+    }
+
     private lateinit var binding : FragmentTaskListBinding
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -38,12 +48,14 @@ class TaskListFragment : Fragment() {
         recyclerView.adapter = adapter
 
         val addButton = view.findViewById<FloatingActionButton>(R.id.addButton)
-        addButton.setOnClickListener(){
-            // Instanciation d'un objet task avec des données préremplies:
+        addButton.setOnClickListener()
+        {
+            val intent = Intent(requireContext(), DetailActivity::class.java)
+
             val newTask = Task(id = UUID.randomUUID().toString(), title = "Task ${taskList.size + 1}")
             taskList = taskList + newTask
             refreshAdapter()
-            }
+        }
 
         adapter.onClickDelete = { task ->
             taskList = taskList.filter { it.id != task.id }

@@ -27,7 +27,7 @@ class TaskListAdapter : ListAdapter<Task, TaskListAdapter.TaskViewHolder>(MyItem
         var textViewTitle = itemView.findViewById<TextView>(R.id.task_title)
         var textViewDesc = itemView.findViewById<TextView>(R.id.task_description)
         private val deleteButton = itemView.findViewById<View>(R.id.deleteButton)
-        
+
         fun bind(task: Task) {
             // on affichera les données ici
             textViewTitle.text = task.title
