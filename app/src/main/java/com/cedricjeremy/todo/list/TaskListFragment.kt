@@ -52,7 +52,7 @@ class TaskListFragment : Fragment() {
         addButton.setOnClickListener()
         {
             val intent = Intent(requireContext(), DetailActivity::class.java)
-
+            startActivity(intent)
             val newTask = Task(id = UUID.randomUUID().toString(), title = "Task ${taskList.size + 1}")
             taskList = taskList + newTask
             refreshAdapter()
