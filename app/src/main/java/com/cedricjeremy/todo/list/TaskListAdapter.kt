@@ -25,6 +25,7 @@ object MyItemsDiffCallback : DiffUtil.ItemCallback<Task>() {
 class TaskListAdapter : ListAdapter<Task, TaskListAdapter.TaskViewHolder>(MyItemsDiffCallback) {
 
     // on utilise `inner` ici afin d'avoir accès aux propriétés de l'adapter directement
+
     private lateinit var binding : ItemTaskBinding
     inner class TaskViewHolder(val binding: ItemTaskBinding) : RecyclerView.ViewHolder(binding.root) {
         var textViewTitle = binding.taskTitle
@@ -33,9 +34,14 @@ class TaskListAdapter : ListAdapter<Task, TaskListAdapter.TaskViewHolder>(MyItem
             // on affichera les données ici
             textViewTitle.text = task.title
             textViewDesc.text = task.description
-        }
 
+            deleteButton.setOnClickListener {
+                onClickDelete(task) // Appelle la lambda pour gérer la suppression
+            }
+        }
     }
+
+    var onClickDelete: (Task) -> Unit = {}
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
         binding = ItemTaskBinding.inflate(LayoutInflater.from(parent.context))

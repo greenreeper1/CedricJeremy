@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import androidx.recyclerview.widget.RecyclerView
@@ -36,13 +37,20 @@ class TaskListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val recyclerView = binding.recycler
         recyclerView.adapter = adapter
+
         val button = binding.addButton
         button.setOnClickListener(){
+
             // Instanciation d'un objet task avec des données préremplies:
             val newTask = Task(id = UUID.randomUUID().toString(), title = "Task ${taskList.size + 1}")
             taskList = taskList + newTask
             refreshAdapter()
             }
+
+        adapter.onClickDelete = { task ->
+            taskList = taskList.filter { it.id != task.id }
+            refreshAdapter()
+        }
     }
 
     @SuppressLint("NotifyDataSetChanged")
