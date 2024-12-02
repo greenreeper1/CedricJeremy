@@ -1,5 +1,5 @@
 package com.cedricjeremy.todo.list
 
-data class Task(var id: String, var title: String, var description: String = "Ceci est une description"){
+data class Task(var id: String, var title: String, var description: String = "Ceci est une description") : java.io.Serializable{
 
 }
