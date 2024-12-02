@@ -21,6 +21,7 @@ class TaskListFragment : Fragment() {
     )
     private val adapter = TaskListAdapter()
     private lateinit var binding : FragmentTaskListBinding
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -35,7 +36,7 @@ class TaskListFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val recyclerView = binding.recycler
         recyclerView.adapter = adapter
-        val button = binding.recycler
+        val button = binding.addButton
         button.setOnClickListener(){
             // Instanciation d'un objet task avec des données préremplies:
             val newTask = Task(id = UUID.randomUUID().toString(), title = "Task ${taskList.size + 1}")

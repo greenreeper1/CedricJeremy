@@ -9,6 +9,8 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.cedricjeremy.todo.R
+import com.cedricjeremy.todo.databinding.FragmentTaskListBinding
+import com.cedricjeremy.todo.databinding.ItemTaskBinding
 
 object MyItemsDiffCallback : DiffUtil.ItemCallback<Task>() {
     override fun areItemsTheSame(oldItem: Task, newItem: Task) : Boolean {
@@ -23,9 +25,10 @@ object MyItemsDiffCallback : DiffUtil.ItemCallback<Task>() {
 class TaskListAdapter : ListAdapter<Task, TaskListAdapter.TaskViewHolder>(MyItemsDiffCallback) {
 
     // on utilise `inner` ici afin d'avoir accès aux propriétés de l'adapter directement
-    inner class TaskViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        var textViewTitle = itemView.findViewById<TextView>(R.id.task_title)
-        var textViewDesc = itemView.findViewById<TextView>(R.id.task_description)
+    private lateinit var binding : ItemTaskBinding
+    inner class TaskViewHolder(val binding: ItemTaskBinding) : RecyclerView.ViewHolder(binding.root) {
+        var textViewTitle = binding.taskTitle
+        var textViewDesc = binding.taskDescription
         fun bind(task: Task) {
             // on affichera les données ici
             textViewTitle.text = task.title
@@ -35,8 +38,8 @@ class TaskListAdapter : ListAdapter<Task, TaskListAdapter.TaskViewHolder>(MyItem
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
-        val itemView = LayoutInflater.from(parent.context).inflate(R.layout.item_task, parent, false)
-        val taskViewHolder = TaskViewHolder(itemView)
+        binding = ItemTaskBinding.inflate(LayoutInflater.from(parent.context))
+        val taskViewHolder = TaskViewHolder(binding)
         return taskViewHolder
     }
 
