@@ -30,11 +30,11 @@ class TaskListAdapter : ListAdapter<Task, TaskListAdapter.TaskViewHolder>(MyItem
     inner class TaskViewHolder(val binding: ItemTaskBinding) : RecyclerView.ViewHolder(binding.root) {
         var textViewTitle = binding.taskTitle
         var textViewDesc = binding.taskDescription
+        val deleteButton = binding.deleteButton
         fun bind(task: Task) {
             // on affichera les données ici
             textViewTitle.text = task.title
             textViewDesc.text = task.description
-
             deleteButton.setOnClickListener {
                 onClickDelete(task) // Appelle la lambda pour gérer la suppression
             }
