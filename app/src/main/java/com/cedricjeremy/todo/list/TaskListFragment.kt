@@ -25,12 +25,19 @@ class TaskListFragment : Fragment() {
     Task(id = "id_3", title = "Task 3")
     )
     private val adapter = TaskListAdapter()
+    companion object {
+        const val TASK_KEY = "task"
+    }
 
     // Déclaration du launcher
     val createTask = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         // dans cette callback on récupèrera la task et on l'ajoutera à la liste
-        val newTask = Task(id = UUID.randomUUID().toString(), title = "Task ${taskList.size + 1}")
-        taskList = taskList + newTask
+        /*val newTask = Task(id = UUID.randomUUID().toString(), title = "Task ${taskList.size + 1}")
+        taskList = taskList + newTask*/
+        val task = result.data?.getSerializableExtra(TASK_KEY) as Task?
+        if (task != null){
+            taskList = taskList + task
+        }
         refreshAdapter()
     }
 
@@ -55,7 +62,6 @@ class TaskListFragment : Fragment() {
         addButton.setOnClickListener()
         {
             val intent = Intent(requireContext(), DetailActivity::class.java)
-            startActivity(intent)
             createTask.launch(intent)
         }
 
