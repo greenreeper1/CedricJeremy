@@ -20,6 +20,12 @@
         android:layout_height="wrap_content" />
 
     <ImageButton
+        android:id="@+id/editButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:srcCompat="@android:drawable/ic_menu_edit" />
+
+    <ImageButton
         android:id="@+id/deleteButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

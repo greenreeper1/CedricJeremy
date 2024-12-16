@@ -29,6 +29,7 @@ class TaskListAdapter : ListAdapter<Task, TaskListAdapter.TaskViewHolder>(MyItem
         var textViewTitle = binding.taskTitle
         var textViewDesc = binding.taskDescription
         private val deleteButton = binding.deleteButton
+        private val editButton = binding.editButton
 
         fun bind(task: Task) {
             // on affichera les données ici
@@ -37,11 +38,14 @@ class TaskListAdapter : ListAdapter<Task, TaskListAdapter.TaskViewHolder>(MyItem
             deleteButton.setOnClickListener {
                 onClickDelete(task) // Appelle la lambda pour gérer la suppression
             }
+            editButton.setOnClickListener {
+                onClickEdit(task)
+            }
         }
     }
 
     var onClickDelete: (Task) -> Unit = {}
-
+    var onClickEdit: (Task) -> Unit = {}
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TaskViewHolder {
         binding = ItemTaskBinding.inflate(LayoutInflater.from(parent.context))
         val taskViewHolder = TaskViewHolder(binding)

@@ -17,25 +17,29 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.cedricjeremy.todo.list.Task
 import java.util.UUID
-
 class DetailActivity : ComponentActivity() {
+    companion object {
+        const val TASK_TO_EDIT_KEY = "taskToEdit"
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val taskToEdit = intent.getSerializableExtra(TASK_TO_EDIT_KEY) as Task?
         setContent {
-            TaskDetailScreen(onValidate = {newTask ->
+            TaskDetailScreen(taskToEdit, onValidate = {newTask ->
             intent.putExtra("task", newTask)
             setResult(RESULT_OK, intent)
             finish() })
+
         }
     }
 }
 
 @Composable
-fun TaskDetailScreen(onValidate: (Task) -> Unit) {
+fun TaskDetailScreen(initialTask: Task?, onValidate: (Task) -> Unit) {
     // Contenu principal de l'écran
-    var task by remember { mutableStateOf(Task(id = UUID.randomUUID().toString(), title = "New Task !")) }
-    var title by remember { mutableStateOf("") }
-    var desc by remember { mutableStateOf("") }
+    val task by remember { mutableStateOf(Task(id = UUID.randomUUID().toString(), title = "New Task !")) }
+    var title by remember { mutableStateOf(initialTask?.title ?: "") }
+    var desc by remember { mutableStateOf(initialTask?.description ?: "") }
     Column(
         modifier = Modifier
             .padding(16.dp),
@@ -59,7 +63,15 @@ fun TaskDetailScreen(onValidate: (Task) -> Unit) {
         )
         Button(onClick = {
             // Ajoutez ici une logique si nécessaire
-            val newTask = Task(id = UUID.randomUUID().toString(), title = "New Task!")
+            val newTask = initialTask?.copy(
+                title = title,
+                description = desc
+            ) ?: Task(
+                id = UUID.randomUUID().toString(),
+                title = title,
+                description = desc
+            )
+            onValidate(newTask)
         }) {
             Text(text = "Validate")
         }
@@ -69,6 +81,5 @@ fun TaskDetailScreen(onValidate: (Task) -> Unit) {
 @Preview(showBackground = true)
 @Composable
 fun DetailPreview() {
-    TaskDetailScreen(onValidate = {newTask ->
-        })
+    TaskDetailScreen(initialTask = Task(id = "1", title = "Preview Task", description = "A preview description"), onValidate = {})
 }

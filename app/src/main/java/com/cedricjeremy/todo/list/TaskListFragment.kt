@@ -65,6 +65,12 @@ class TaskListFragment : Fragment() {
             createTask.launch(intent)
         }
 
+        adapter.onClickEdit = {taskToEdit ->
+            val intent = Intent(requireContext(), DetailActivity::class.java)
+            intent.putExtra("task", taskToEdit)
+            refreshAdapter()
+        }
+
         adapter.onClickDelete = { task ->
             taskList = taskList.filter { it.id != task.id }
             refreshAdapter()
