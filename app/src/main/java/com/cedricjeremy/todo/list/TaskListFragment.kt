@@ -41,6 +41,18 @@ class TaskListFragment : Fragment() {
         refreshAdapter()
     }
 
+    private val detailLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            // Récupère la tâche mise à jour depuis le résultat
+            val updatedTask = result.data?.getSerializableExtra(DetailActivity.TASK_KEY) as? Task
+            updatedTask?.let {
+                // Mets à jour l'adaptateur ici
+                taskList = taskList.map { if (it.id == updatedTask.id) updatedTask else it }
+                refreshAdapter()
+            }
+        }
+    }
+
     private lateinit var binding : FragmentTaskListBinding
 
     override fun onCreateView(
@@ -67,8 +79,8 @@ class TaskListFragment : Fragment() {
 
         adapter.onClickEdit = {taskToEdit ->
             val intent = Intent(requireContext(), DetailActivity::class.java)
-            intent.putExtra("task", taskToEdit)
-            refreshAdapter()
+            intent.putExtra(TASK_KEY, taskToEdit)
+            detailLauncher.launch(intent)
         }
 
         adapter.onClickDelete = { task ->

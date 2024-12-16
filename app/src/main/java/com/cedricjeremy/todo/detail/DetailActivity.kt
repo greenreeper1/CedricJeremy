@@ -18,15 +18,16 @@ import androidx.compose.ui.unit.dp
 import com.cedricjeremy.todo.list.Task
 import java.util.UUID
 class DetailActivity : ComponentActivity() {
+
     companion object {
-        const val TASK_TO_EDIT_KEY = "taskToEdit"
+        const val TASK_KEY = "task"
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val taskToEdit = intent.getSerializableExtra(TASK_TO_EDIT_KEY) as Task?
+        val taskToEdit = intent.getSerializableExtra(TASK_KEY) as Task?
         setContent {
             TaskDetailScreen(taskToEdit, onValidate = {newTask ->
-            intent.putExtra("task", newTask)
+            intent.putExtra(TASK_KEY, newTask)
             setResult(RESULT_OK, intent)
             finish() })
 
@@ -37,20 +38,15 @@ class DetailActivity : ComponentActivity() {
 @Composable
 fun TaskDetailScreen(initialTask: Task?, onValidate: (Task) -> Unit) {
     // Contenu principal de l'écran
-    val task by remember { mutableStateOf(Task(id = UUID.randomUUID().toString(), title = "New Task !")) }
-    var title by remember { mutableStateOf(initialTask?.title ?: "") }
-    var desc by remember { mutableStateOf(initialTask?.description ?: "") }
+    val basicTask = Task(id = UUID.randomUUID().toString(), title = "New Task !")
+    var title by remember { mutableStateOf(initialTask?.title ?: basicTask.title) }
+    var desc by remember { mutableStateOf(initialTask?.description ?: basicTask.description) }
     Column(
         modifier = Modifier
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
 
     ) {
-        OutlinedTextField(
-            value = task.title,
-            onValueChange = {task.id},
-            label = {Text("Create a new task")}
-        )
         OutlinedTextField(
             value = title,
             onValueChange = {title = it},
@@ -63,7 +59,7 @@ fun TaskDetailScreen(initialTask: Task?, onValidate: (Task) -> Unit) {
         )
         Button(onClick = {
             // Ajoutez ici une logique si nécessaire
-            val newTask = initialTask?.copy(
+                val newTask = initialTask?.copy(
                 title = title,
                 description = desc
             ) ?: Task(
