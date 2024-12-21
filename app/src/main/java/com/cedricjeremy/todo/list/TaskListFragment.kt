@@ -24,7 +24,18 @@ class TaskListFragment : Fragment() {
     Task(id = "id_2", title = "Task 2"),
     Task(id = "id_3", title = "Task 3")
     )
-    private val adapter = TaskListAdapter()
+    private val adapterListener = object : TaskListListener{
+        override fun onClickDelete(task: Task) {
+            taskList = taskList.filter { it.id != task.id }
+            refreshAdapter()
+        }
+
+        override fun onClickEdit(task: Task) {
+            val intent = Intent(requireContext(), DetailActivity::class.java)
+            intent.putExtra(TASK_KEY, task)
+            detailLauncher.launch(intent)
+        }
+    }
     companion object {
         const val TASK_KEY = "task"
     }
@@ -53,6 +64,8 @@ class TaskListFragment : Fragment() {
         }
     }
 
+    private val adapter = TaskListAdapter(adapterListener)
+
     private lateinit var binding : FragmentTaskListBinding
 
     override fun onCreateView(
@@ -77,7 +90,7 @@ class TaskListFragment : Fragment() {
             createTask.launch(intent)
         }
 
-        adapter.onClickEdit = {taskToEdit ->
+        /*adapter.onClickEdit = {taskToEdit ->
             val intent = Intent(requireContext(), DetailActivity::class.java)
             intent.putExtra(TASK_KEY, taskToEdit)
             detailLauncher.launch(intent)
@@ -86,7 +99,7 @@ class TaskListFragment : Fragment() {
         adapter.onClickDelete = { task ->
             taskList = taskList.filter { it.id != task.id }
             refreshAdapter()
-        }
+        }*/
     }
 
     @SuppressLint("NotifyDataSetChanged")
