@@ -13,15 +13,16 @@
         android:theme="@style/Theme.CedricJeremy"
         tools:targetApi="31">
         <activity
-            android:name=".detail.CreateTask"
-            android:exported="false"
-            android:label="@string/title_activity_create_task"
-            android:theme="@style/Theme.CedricJeremy" />
-        <activity
             android:name=".detail.DetailActivity"
-            android:exported="false"
+            android:exported="true"
             android:label="@string/title_activity_detail"
-            android:theme="@style/Theme.CedricJeremy" />
+            android:theme="@style/Theme.CedricJeremy">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity>
         <activity
             android:name=".MainActivity"
             android:exported="true">

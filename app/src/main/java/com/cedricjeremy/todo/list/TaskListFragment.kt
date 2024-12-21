@@ -35,6 +35,14 @@ class TaskListFragment : Fragment() {
             intent.putExtra(TASK_KEY, task)
             detailLauncher.launch(intent)
         }
+
+        override fun shareText(activity: Activity, textToShare: String) {
+            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                type = "text/plain"
+                putExtra(Intent.EXTRA_TEXT, textToShare)
+            }
+            activity.startActivity(Intent.createChooser(shareIntent, "Share via"))
+        }
     }
     companion object {
         const val TASK_KEY = "task"
@@ -89,17 +97,6 @@ class TaskListFragment : Fragment() {
             val intent = Intent(requireContext(), DetailActivity::class.java)
             createTask.launch(intent)
         }
-
-        /*adapter.onClickEdit = {taskToEdit ->
-            val intent = Intent(requireContext(), DetailActivity::class.java)
-            intent.putExtra(TASK_KEY, taskToEdit)
-            detailLauncher.launch(intent)
-        }
-
-        adapter.onClickDelete = { task ->
-            taskList = taskList.filter { it.id != task.id }
-            refreshAdapter()
-        }*/
     }
 
     @SuppressLint("NotifyDataSetChanged")

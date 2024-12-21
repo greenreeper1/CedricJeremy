@@ -1,5 +1,6 @@
 package com.cedricjeremy.todo.list
 
+import android.app.Activity
 import android.content.ClipData
 import android.view.LayoutInflater
 import android.view.View
@@ -40,6 +41,11 @@ class TaskListAdapter(val listener: TaskListListener) : ListAdapter<Task, TaskLi
             }
             editButton.setOnClickListener {
                 listener.onClickEdit(task)
+            }
+            itemView.setOnLongClickListener {
+                val textToShare = "Task: ${task.title}\nDescription: ${task.description}"
+                listener.shareText(itemView.context as Activity, textToShare)
+                true
             }
         }
     }
