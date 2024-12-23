@@ -7,16 +7,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentTransaction
-import androidx.recyclerview.widget.RecyclerView
 import com.cedricjeremy.todo.R
 import com.cedricjeremy.todo.databinding.FragmentTaskListBinding
 import com.cedricjeremy.todo.detail.DetailActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import java.util.UUID
+import java.util.ArrayList
+
 
 class TaskListFragment : Fragment() {
     private var taskList = listOf(
@@ -24,6 +22,12 @@ class TaskListFragment : Fragment() {
     Task(id = "id_2", title = "Task 2"),
     Task(id = "id_3", title = "Task 3")
     )
+
+    override fun onSaveInstanceState(savedState: Bundle) {
+        super.onSaveInstanceState(savedState)
+        savedState.putSerializable("TASK_LIST", ArrayList(taskList))
+    }
+
     private val adapterListener = object : TaskListListener{
         override fun onClickDelete(task: Task) {
             taskList = taskList.filter { it.id != task.id }
@@ -83,6 +87,11 @@ class TaskListFragment : Fragment() {
     ): View? {
         binding = FragmentTaskListBinding.inflate(layoutInflater)
         val rootView = binding.root
+        taskList = if (savedInstanceState != null) {
+            savedInstanceState.getSerializable("TASK_LIST") as? List<Task> ?: emptyList()
+        } else {
+            taskList
+        }
         adapter.submitList(taskList)
         return rootView
     }
