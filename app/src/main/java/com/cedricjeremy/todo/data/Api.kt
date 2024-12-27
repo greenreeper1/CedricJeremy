@@ -9,7 +9,6 @@ import retrofit2.Retrofit
 
 object Api {
     private const val TOKEN = "76ef92afc5631fe8178ea9a3dd4e46133227ac6b"
-
     private val retrofit by lazy {
         // client HTTP
         val okHttpClient = OkHttpClient.Builder()
@@ -35,5 +34,9 @@ object Api {
             .client(okHttpClient)
             .addConverterFactory(jsonSerializer.asConverterFactory("application/json".toMediaType()))
             .build()
+    }
+    
+    val userWebService : UserWebService by lazy {
+        retrofit.create(UserWebService::class.java)
     }
 }
