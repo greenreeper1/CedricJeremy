@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.cedricjeremy.todo.R
 import com.cedricjeremy.todo.data.Api
@@ -26,23 +27,6 @@ class TaskListFragment : Fragment() {
     Task(id = "id_2", title = "Task 2"),
     Task(id = "id_3", title = "Task 3")
     )
-
-    override fun onSaveInstanceState(savedState: Bundle) {
-        super.onSaveInstanceState(savedState)
-        savedState.putSerializable("TASK_LIST", ArrayList(taskList))
-    }
-
-    override fun onResume() {
-        super.onResume()
-        val userTextView = view?.findViewById<TextView>(R.id.userTextView)
-        lifecycleScope.launch {
-            val user = Api.userWebService.fetchUser().body()!!
-            if (userTextView != null) {
-                userTextView.text = user.name
-            }
-        }
-
-    }
 
     private val adapterListener = object : TaskListListener{
         override fun onClickDelete(task: Task) {
@@ -92,6 +76,8 @@ class TaskListFragment : Fragment() {
         }
     }
 
+    private val viewModel: TaskListViewModel by viewModels()
+
     private val adapter = TaskListAdapter(adapterListener)
 
     private lateinit var binding : FragmentTaskListBinding
@@ -122,6 +108,32 @@ class TaskListFragment : Fragment() {
             val intent = Intent(requireContext(), DetailActivity::class.java)
             createTask.launch(intent)
         }
+
+        lifecycleScope.launch { // on lance une coroutine car `collect` est `suspend`
+            viewModel.tasksStateFlow.collect { newList ->
+                // cette lambda est exécutée à chaque fois que la liste est mise à jour dans le VM
+                // -> ici, on met à jour la liste dans l'adapter
+                refreshAdapter()
+            }
+        }
+    }
+
+    override fun onSaveInstanceState(savedState: Bundle) {
+        super.onSaveInstanceState(savedState)
+        savedState.putSerializable("TASK_LIST", ArrayList(taskList))
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val userTextView = view?.findViewById<TextView>(R.id.userTextView)
+        viewModel.refresh() // on demande de rafraîchir les données sans attendre le retour directement
+        lifecycleScope.launch {
+            val user = Api.userWebService.fetchUser().body()!!
+            if (userTextView != null) {
+                userTextView.text = user.name
+            }
+        }
+
     }
 
     @SuppressLint("NotifyDataSetChanged")
