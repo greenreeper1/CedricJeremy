@@ -7,12 +7,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.cedricjeremy.todo.R
+import com.cedricjeremy.todo.data.Api
 import com.cedricjeremy.todo.databinding.FragmentTaskListBinding
 import com.cedricjeremy.todo.detail.DetailActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotlinx.coroutines.launch
 import java.util.ArrayList
 
 
@@ -26,6 +30,18 @@ class TaskListFragment : Fragment() {
     override fun onSaveInstanceState(savedState: Bundle) {
         super.onSaveInstanceState(savedState)
         savedState.putSerializable("TASK_LIST", ArrayList(taskList))
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val userTextView = view?.findViewById<TextView>(R.id.userTextView)
+        lifecycleScope.launch {
+            val user = Api.userWebService.fetchUser().body()!!
+            if (userTextView != null) {
+                userTextView.text = user.name
+            }
+        }
+
     }
 
     private val adapterListener = object : TaskListListener{
