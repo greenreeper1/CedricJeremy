@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 class TaskListViewModel : ViewModel() {
     private val webService = Api.tasksWebService
 
-    public val tasksStateFlow = MutableStateFlow<List<Task>>(emptyList())
+    public var tasksStateFlow = MutableStateFlow<List<Task>>(emptyList())
 
     fun refresh() {
         viewModelScope.launch {
@@ -25,7 +25,39 @@ class TaskListViewModel : ViewModel() {
     }
 
     // à compléter plus tard:
-    fun add(task: Task) {}
-    fun edit(task: Task) {}
-    fun remove(task: Task) {}
+    fun add(task: Task) {
+        viewModelScope.launch {
+            val response = webService.create(task) // Call HTTP
+            if (!response.isSuccessful) {
+                Log.e("Network", "Error: ${response.raw()}")
+                return@launch
+            }
+            val createdTask = response.body()!!
+            tasksStateFlow.value += createdTask
+        }
+    }
+    fun edit(task: Task) {
+        viewModelScope.launch {
+            val response = webService.update(task) // Call HTTP
+            if (!response.isSuccessful) {
+                Log.e("Network", "Error: ${response.raw()}")
+                return@launch
+            }
+            val updatedTask = response.body()!!
+            val updatedList = tasksStateFlow.value.map {
+                if (it.id == updatedTask.id) updatedTask else it
+            }
+            tasksStateFlow.value = updatedList
+        }
+    }
+    fun remove(task: Task) {
+        viewModelScope.launch {
+            val response = webService.delete(task.id) // Call HTTP
+            if (!response.isSuccessful) {
+                Log.e("Network", "Error: ${response.raw()}")
+                return@launch
+            }
+            tasksStateFlow.value = tasksStateFlow.value.filter { it.id != task.id }
+        }
+    }
 }

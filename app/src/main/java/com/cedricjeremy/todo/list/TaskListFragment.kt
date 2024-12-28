@@ -17,21 +17,17 @@ import com.cedricjeremy.todo.data.Api
 import com.cedricjeremy.todo.databinding.FragmentTaskListBinding
 import com.cedricjeremy.todo.detail.DetailActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import java.util.ArrayList
 
 
 class TaskListFragment : Fragment() {
-    private var taskList = listOf(
-    Task(id = "id_1", title = "Task 1", description = "description 1"),
-    Task(id = "id_2", title = "Task 2"),
-    Task(id = "id_3", title = "Task 3")
-    )
+    private val viewModel: TaskListViewModel by viewModels()
 
     private val adapterListener = object : TaskListListener{
         override fun onClickDelete(task: Task) {
-            taskList = taskList.filter { it.id != task.id }
-            refreshAdapter()
+            viewModel.remove(task)
         }
 
         override fun onClickEdit(task: Task) {
@@ -55,13 +51,10 @@ class TaskListFragment : Fragment() {
     // Déclaration du launcher
     val createTask = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         // dans cette callback on récupèrera la task et on l'ajoutera à la liste
-        /*val newTask = Task(id = UUID.randomUUID().toString(), title = "Task ${taskList.size + 1}")
-        taskList = taskList + newTask*/
         val task = result.data?.getSerializableExtra(TASK_KEY) as Task?
         if (task != null){
-            taskList = taskList + task
+            viewModel.add(task)
         }
-        refreshAdapter()
     }
 
     private val detailLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -69,14 +62,10 @@ class TaskListFragment : Fragment() {
             // Récupère la tâche mise à jour depuis le résultat
             val updatedTask = result.data?.getSerializableExtra(DetailActivity.TASK_KEY) as? Task
             updatedTask?.let {
-                // Mets à jour l'adaptateur ici
-                taskList = taskList.map { if (it.id == updatedTask.id) updatedTask else it }
-                refreshAdapter()
+                viewModel.edit(updatedTask)
             }
         }
     }
-
-    private val viewModel: TaskListViewModel by viewModels()
 
     private val adapter = TaskListAdapter(adapterListener)
 
@@ -89,12 +78,16 @@ class TaskListFragment : Fragment() {
     ): View? {
         binding = FragmentTaskListBinding.inflate(layoutInflater)
         val rootView = binding.root
-        taskList = if (savedInstanceState != null) {
+        viewModel.tasksStateFlow.value = if (savedInstanceState != null) {
             savedInstanceState.getSerializable("TASK_LIST") as? List<Task> ?: emptyList()
         } else {
-            taskList
+            listOf(
+                Task(id = "id_1", title = "Task 1", description = "description 1"),
+                Task(id = "id_2", title = "Task 2"),
+                Task(id = "id_3", title = "Task 3")
+            )
         }
-        adapter.submitList(taskList)
+        adapter.submitList(viewModel.tasksStateFlow.value)
         return rootView
     }
 
@@ -120,7 +113,7 @@ class TaskListFragment : Fragment() {
 
     override fun onSaveInstanceState(savedState: Bundle) {
         super.onSaveInstanceState(savedState)
-        savedState.putSerializable("TASK_LIST", ArrayList(taskList))
+        savedState.putSerializable("TASK_LIST", ArrayList(adapter.currentList))
     }
 
     override fun onResume() {
@@ -138,7 +131,7 @@ class TaskListFragment : Fragment() {
 
     @SuppressLint("NotifyDataSetChanged")
     fun refreshAdapter(){
-        adapter.submitList(taskList)
+        adapter.submitList(viewModel.tasksStateFlow.value)
         adapter.notifyDataSetChanged()
     }
 }
