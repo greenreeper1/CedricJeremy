@@ -7,11 +7,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import coil3.load
 import com.cedricjeremy.todo.R
 import com.cedricjeremy.todo.data.Api
 import com.cedricjeremy.todo.databinding.FragmentTaskListBinding
@@ -126,7 +128,8 @@ class TaskListFragment : Fragment() {
                 userTextView.text = user.name
             }
         }
-
+        val imageView = view?.findViewById<ImageView>(R.id.imageAvatar)
+        imageView?.load("https://goo.gl/gEgYUd")
     }
 
     @SuppressLint("NotifyDataSetChanged")
