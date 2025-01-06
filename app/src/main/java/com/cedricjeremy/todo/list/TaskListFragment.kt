@@ -18,6 +18,7 @@ import com.cedricjeremy.todo.R
 import com.cedricjeremy.todo.data.Api
 import com.cedricjeremy.todo.databinding.FragmentTaskListBinding
 import com.cedricjeremy.todo.detail.DetailActivity
+import com.cedricjeremy.todo.user.UserActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
@@ -111,6 +112,13 @@ class TaskListFragment : Fragment() {
                 refreshAdapter()
             }
         }
+
+        val imageView = view.findViewById<ImageView>(R.id.imageAvatar)
+        imageView.setOnClickListener {
+            val intent = Intent(requireContext(), UserActivity::class.java)
+            startActivity(intent)
+        }
+
     }
 
     override fun onSaveInstanceState(savedState: Bundle) {
