@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import coil3.load
+import coil3.request.error
 import com.cedricjeremy.todo.R
 import com.cedricjeremy.todo.data.Api
 import com.cedricjeremy.todo.databinding.FragmentTaskListBinding
@@ -129,15 +130,18 @@ class TaskListFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         val userTextView = view?.findViewById<TextView>(R.id.userTextView)
+        val imageView = view?.findViewById<ImageView>(R.id.imageAvatar)
         viewModel.refresh() // on demande de rafraîchir les données sans attendre le retour directement
         lifecycleScope.launch {
             val user = Api.userWebService.fetchUser().body()!!
             if (userTextView != null) {
                 userTextView.text = user.name
             }
+            imageView?.load("https://goo.gl/gEgYUd")
+            imageView?.load(user.avatar) {
+                error(R.drawable.ic_launcher_background) // image par défaut en cas d'erreur
+            }
         }
-        val imageView = view?.findViewById<ImageView>(R.id.imageAvatar)
-        imageView?.load("https://goo.gl/gEgYUd")
     }
 
     @SuppressLint("NotifyDataSetChanged")
