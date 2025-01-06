@@ -1,5 +1,6 @@
 package com.cedricjeremy.todo.user
 
+import android.Manifest
 import android.content.ContentResolver
 import android.net.Uri
 import android.os.Bundle
@@ -67,6 +68,9 @@ class UserActivity : ComponentActivity() {
                     Api.userWebService.updateAvatar(avatar)
                 }
             }
+            val askPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+
+            }
             Column {
                 AsyncImage(
                     modifier = Modifier.fillMaxHeight(.2f),
@@ -81,6 +85,7 @@ class UserActivity : ComponentActivity() {
                 )
                 Button(
                     onClick = {
+                        askPermission.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
                         uploadPicture.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                     },
                     content = { Text("Pick photo") }
