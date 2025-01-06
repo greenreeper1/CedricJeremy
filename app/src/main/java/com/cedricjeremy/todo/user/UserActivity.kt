@@ -1,10 +1,13 @@
 package com.cedricjeremy.todo.user
 
+import android.content.ContentResolver
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.launch
 import androidx.compose.foundation.layout.Column
@@ -24,7 +27,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.lifecycleScope
 import coil3.Bitmap
-import coil3.Uri
 import coil3.compose.AsyncImage
 import com.cedricjeremy.todo.data.Api
 import com.cedricjeremy.todo.user.ui.theme.CedricJeremyTheme
@@ -35,6 +37,16 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
 
 class UserActivity : ComponentActivity() {
+
+    private fun Uri.toRequestBody(): MultipartBody.Part {
+        val fileInputStream = contentResolver.openInputStream(this)!!
+        val fileBody = fileInputStream.readBytes().toRequestBody()
+        return MultipartBody.Part.createFormData(
+            name = "avatar",
+            filename = "avatar.jpg",
+            body = fileBody
+        )
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -49,7 +61,12 @@ class UserActivity : ComponentActivity() {
                     Api.userWebService.updateAvatar(avatar)
                 }
             }
-
+            val uploadPicture = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) {uri->
+                val avatar = uri!!.toRequestBody()
+                composeScope.launch {
+                    Api.userWebService.updateAvatar(avatar)
+                }
+            }
             Column {
                 AsyncImage(
                     modifier = Modifier.fillMaxHeight(.2f),
@@ -63,7 +80,9 @@ class UserActivity : ComponentActivity() {
                     content = { Text("Take picture") }
                 )
                 Button(
-                    onClick = {},
+                    onClick = {
+                        uploadPicture.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                    },
                     content = { Text("Pick photo") }
                 )
             }
@@ -98,3 +117,4 @@ private fun Bitmap.toRequestBody(): MultipartBody.Part {
         body = tmpFile.readBytes().toRequestBody()
     )
 }
+
