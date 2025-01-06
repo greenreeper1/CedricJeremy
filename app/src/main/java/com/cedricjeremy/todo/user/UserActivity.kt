@@ -2,8 +2,11 @@ package com.cedricjeremy.todo.user
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.launch
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,6 +25,7 @@ import coil3.Bitmap
 import coil3.Uri
 import coil3.compose.AsyncImage
 import com.cedricjeremy.todo.user.ui.theme.CedricJeremyTheme
+import kotlinx.serialization.json.JsonNull.content
 
 class UserActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,6 +34,9 @@ class UserActivity : ComponentActivity() {
         setContent {
             var bitmap: Bitmap? by remember { mutableStateOf(null) }
             var uri: Uri? by remember { mutableStateOf(null) }
+            val takePicture = rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) {
+                bitmap = it
+            }
             Column {
                 AsyncImage(
                     modifier = Modifier.fillMaxHeight(.2f),
@@ -37,7 +44,9 @@ class UserActivity : ComponentActivity() {
                     contentDescription = null
                 )
                 Button(
-                    onClick = {},
+                    onClick = {
+                        takePicture.launch()
+                    },
                     content = { Text("Take picture") }
                 )
                 Button(
