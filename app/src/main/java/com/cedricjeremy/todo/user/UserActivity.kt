@@ -2,8 +2,11 @@ package com.cedricjeremy.todo.user
 
 import android.Manifest
 import android.content.ContentResolver
+import android.content.ContentValues
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -53,13 +56,18 @@ class UserActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             var bitmap: Bitmap? by remember { mutableStateOf(null) }
-            var uri: Uri? by remember { mutableStateOf(null) }
+            val captureUri = remember {
+                contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, ContentValues())
+            }
             val composeScope = rememberCoroutineScope()
-            val takePicture = rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) {
-                bitmap = it
-                val avatar = it!!.toRequestBody()
-                composeScope.launch {
-                    Api.userWebService.updateAvatar(avatar)
+            val takePicture = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+                if (success) {
+                    captureUri?.let { uri ->
+                        val avatar = uri.toRequestBody()
+                        composeScope.launch {
+                            Api.userWebService.updateAvatar(avatar)
+                        }
+                    }
                 }
             }
             val uploadPicture = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) {uri->
@@ -74,14 +82,14 @@ class UserActivity : ComponentActivity() {
             Column {
                 AsyncImage(
                     modifier = Modifier.fillMaxHeight(.2f),
-                    model = bitmap ?: uri,
+                    model = bitmap ?: captureUri,
                     contentDescription = null
                 )
                 Button(
                     onClick = {
-                        takePicture.launch()
+                        captureUri?.let { uri -> takePicture.launch(uri) }
                     },
-                    content = { Text("Take picture") }
+                    content = { Text("Take high-quality picture") }
                 )
                 Button(
                     onClick = {
