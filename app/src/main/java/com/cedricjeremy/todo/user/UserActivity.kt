@@ -39,6 +39,9 @@ import kotlinx.serialization.json.JsonNull.content
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
+import androidx.activity.viewModels
+import androidx.compose.runtime.collectAsState
+
 
 class UserActivity : ComponentActivity() {
 
@@ -52,37 +55,38 @@ class UserActivity : ComponentActivity() {
         )
     }
     override fun onCreate(savedInstanceState: Bundle?) {
+        val userViewModel: UserViewModel by viewModels()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            var bitmap: Bitmap? by remember { mutableStateOf(null) }
+            val avatarUri by userViewModel.avatarUri.collectAsState()
+
             val captureUri = remember {
                 contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, ContentValues())
             }
-            val composeScope = rememberCoroutineScope()
+
             val takePicture = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
                 if (success) {
                     captureUri?.let { uri ->
                         val avatar = uri.toRequestBody()
-                        composeScope.launch {
-                            Api.userWebService.updateAvatar(avatar)
-                        }
+                        userViewModel.updateAvatar(avatar)
                     }
                 }
             }
-            val uploadPicture = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) {uri->
-                val avatar = uri!!.toRequestBody()
-                composeScope.launch {
-                    Api.userWebService.updateAvatar(avatar)
+
+            val uploadPicture = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+                uri?.let {
+                    val avatar = it.toRequestBody()
+                    userViewModel.updateAvatar(avatar)
                 }
             }
-            val askPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
 
-            }
+            val askPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
+
             Column {
                 AsyncImage(
                     modifier = Modifier.fillMaxHeight(.2f),
-                    model = bitmap ?: captureUri,
+                    model = avatarUri ?: captureUri,
                     contentDescription = null
                 )
                 Button(
@@ -130,4 +134,3 @@ private fun Bitmap.toRequestBody(): MultipartBody.Part {
         body = tmpFile.readBytes().toRequestBody()
     )
 }
-
