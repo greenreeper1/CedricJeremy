@@ -41,7 +41,9 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
 import androidx.activity.viewModels
 import androidx.compose.runtime.collectAsState
-
+import androidx.compose.material3.TextField
+import androidx.compose.ui.unit.dp
+import kotlinx.serialization.Serializable
 
 class UserActivity : ComponentActivity() {
 
@@ -60,7 +62,7 @@ class UserActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val avatarUri by userViewModel.avatarUri.collectAsState()
-
+            var userName by remember { mutableStateOf("") } // Nom de l'utilisateur
             val captureUri = remember {
                 contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, ContentValues())
             }
@@ -83,24 +85,35 @@ class UserActivity : ComponentActivity() {
 
             val askPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
 
-            Column {
+            Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
                 AsyncImage(
                     modifier = Modifier.fillMaxHeight(.2f),
                     model = avatarUri ?: captureUri,
                     contentDescription = null
                 )
+                TextField(
+                    value = userName,
+                    onValueChange = { userName = it },
+                    label = { Text("Nom d'utilisateur") }
+                )
+                Button(
+                    onClick = {
+                        userViewModel.updateUserName(userName)
+                    },
+                    content = { Text("Enregistrer le nom") }
+                )
                 Button(
                     onClick = {
                         captureUri?.let { uri -> takePicture.launch(uri) }
                     },
-                    content = { Text("Take high-quality picture") }
+                    content = { Text("Prendre une photo") }
                 )
                 Button(
                     onClick = {
                         askPermission.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
                         uploadPicture.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                     },
-                    content = { Text("Pick photo") }
+                    content = { Text("Choisir une photo") }
                 )
             }
         }
@@ -134,3 +147,20 @@ private fun Bitmap.toRequestBody(): MultipartBody.Part {
         body = tmpFile.readBytes().toRequestBody()
     )
 }
+
+@Serializable
+data class UserUpdate(
+    val commands: List<Command>
+)
+
+@Serializable
+data class Command(
+    val type: String = "user_update",
+    val args: UserArgs
+)
+
+@Serializable
+data class UserArgs(
+    val id: String,  // L'ID de l'utilisateur
+    val name: String // Le nouveau nom d'utilisateur
+)
