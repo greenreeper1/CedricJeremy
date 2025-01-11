@@ -3,14 +3,17 @@ package com.cedricjeremy.todo.user
 import android.Manifest
 import android.content.ContentResolver
 import android.content.ContentValues
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.launch
@@ -30,7 +33,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.lifecycleScope
-import coil3.Bitmap
 import coil3.compose.AsyncImage
 import com.cedricjeremy.todo.data.Api
 import com.cedricjeremy.todo.user.ui.theme.CedricJeremyTheme
@@ -43,10 +45,12 @@ import androidx.activity.viewModels
 import androidx.compose.runtime.collectAsState
 import androidx.compose.material3.TextField
 import androidx.compose.ui.unit.dp
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.serialization.Serializable
 
 class UserActivity : ComponentActivity() {
-
+    private lateinit var uploadPicture: ActivityResultLauncher<PickVisualMediaRequest>
+    private lateinit var askPermission: ActivityResultLauncher<String>
     private fun Uri.toRequestBody(): MultipartBody.Part {
         val fileInputStream = contentResolver.openInputStream(this)!!
         val fileBody = fileInputStream.readBytes().toRequestBody()
@@ -56,6 +60,35 @@ class UserActivity : ComponentActivity() {
             body = fileBody
         )
     }
+
+    private fun pickPhotoWithPermission() {
+        val storagePermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Manifest.permission.READ_MEDIA_IMAGES //Pour les versions d'Android supérieure à Android 13
+        } else {
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        }
+        val permissionStatus = checkSelfPermission(storagePermission)
+        val isAlreadyAccepted = permissionStatus == PackageManager.PERMISSION_GRANTED
+        val isExplanationNeeded = shouldShowRequestPermissionRationale(storagePermission)
+
+        when {
+            isAlreadyAccepted -> {// lancer l'action souhaitée
+                uploadPicture.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            }
+                isExplanationNeeded -> {// afficher une explication
+                    showMessage("Cette permission est requise pour accéder aux photos")
+                    askPermission.launch(storagePermission)
+                }
+            else -> {// lancer la demande de permission et afficher une explication en cas de refus
+                askPermission.launch(storagePermission)
+            }
+        }
+    }
+
+    private fun showMessage(message: String) {
+        Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_LONG).show()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         val userViewModel: UserViewModel by viewModels()
         super.onCreate(savedInstanceState)
@@ -76,14 +109,22 @@ class UserActivity : ComponentActivity() {
                 }
             }
 
-            val uploadPicture = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+            uploadPicture = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
                 uri?.let {
                     val avatar = it.toRequestBody()
                     userViewModel.updateAvatar(avatar)
                 }
             }
 
-            val askPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
+            askPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+                if (it) {
+                    // Permission accordée, lancer la galerie
+                    uploadPicture.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                } else {
+                    // Permission refusée, informer l'utilisateur
+                    showMessage("Vous devez accorder la permission pour choisir une photo.")
+                }
+            }
 
             Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
                 AsyncImage(
@@ -110,8 +151,7 @@ class UserActivity : ComponentActivity() {
                 )
                 Button(
                     onClick = {
-                        askPermission.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
-                        uploadPicture.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                        pickPhotoWithPermission()
                     },
                     content = { Text("Choisir une photo") }
                 )
@@ -147,6 +187,8 @@ private fun Bitmap.toRequestBody(): MultipartBody.Part {
         body = tmpFile.readBytes().toRequestBody()
     )
 }
+
+
 
 @Serializable
 data class UserUpdate(
